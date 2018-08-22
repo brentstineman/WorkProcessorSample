@@ -8,7 +8,6 @@ namespace WorkProcessorFn
     {
         public string SchemaVersion { get; set; }
         public string JobDetails { get; set; }
-        public SuspectObject SuspectDetails { get; set; }
-        public List<OffenderObject> OffenderList { get; set; }
+        public List<OffenderResult> ResultList { get; set; }
     }
 }
