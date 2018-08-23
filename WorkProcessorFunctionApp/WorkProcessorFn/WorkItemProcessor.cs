@@ -5,6 +5,7 @@ using Microsoft.Azure.WebJobs.ServiceBus;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace WorkProcessorFn
@@ -22,12 +23,20 @@ namespace WorkProcessorFn
                 string messagePayload = Encoding.UTF8.GetString(message.Body.Array);
 
                 // process each message
-                //var myEvent = JsonConvert.DeserializeObject(messagePayload);
+                WorkItemObject myEvent = JsonConvert.DeserializeObject<WorkItemObject>(messagePayload);
 
                 try
                 {
-                    // modify message here
-                    outputEventHubMessages.AddAsync(message).Wait();
+                    ResultStreamObject result = new ResultStreamObject()
+                    {
+                        SchemaVersion = myEvent.SchemaVersion,
+                        JobDetails = myEvent.JobDetails,
+                        // modify the results here
+                        ResultList = new List<OffenderResult>()
+                    };
+
+                    EventData outputEvent = new EventData(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(result)));
+                    outputEventHubMessages.AddAsync(outputEvent).Wait();
                 }
                 catch (Exception ex)
                 {
