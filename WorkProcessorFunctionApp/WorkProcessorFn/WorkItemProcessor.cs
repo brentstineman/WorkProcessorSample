@@ -22,7 +22,7 @@ namespace WorkProcessorFn
                 string messagePayload = Encoding.UTF8.GetString(message.Body.Array);
 
                 // process each message
-                var myEvent = JsonConvert.DeserializeObject(messagePayload);
+                //var myEvent = JsonConvert.DeserializeObject(messagePayload);
 
                 try
                 {
@@ -34,22 +34,20 @@ namespace WorkProcessorFn
                     log.LogError(ex.Message);
                     // do something else with it so its not lost
                 }
-
-                // flush the event hub output, we're doing this and not letting the system so we can do error handling
-                // note that output batch must not exceed maximum Event Hub batch size
-                try
-                {
-                    outputEventHubMessages.FlushAsync().Wait();
-                }
-                catch (Exception ex)
-                {
-                    log.LogError(ex.Message);
-                    //await Task.Delay(5000);
-                    // do something else with it so its not lost
-                }
-
             }
 
+            // flush the event hub output, we're doing this and not letting the system so we can do error handling
+            // note that output batch must not exceed maximum Event Hub batch size
+            try
+            {
+                outputEventHubMessages.FlushAsync().Wait();
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex.Message);
+                //await Task.Delay(5000);
+                // do something else with it so its not lost
+            }
         }
     }
 }
