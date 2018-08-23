@@ -4,7 +4,7 @@ using System.Text;
 
 namespace WorkProcessorFn
 {
-    class OffenderResult
+    public class OffenderResult
     {
         public string Forensic_ID { get; set; }
         public string Offender_ID { get; set; }

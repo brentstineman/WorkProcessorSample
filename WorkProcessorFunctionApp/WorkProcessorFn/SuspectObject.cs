@@ -4,7 +4,7 @@ using System.Text;
 
 namespace WorkProcessorFn
 {
-    class SuspectObject
+    public class SuspectObject
     {
         public int Bar_code { get; set; }
         public string Specimen_ID { get; set; }
