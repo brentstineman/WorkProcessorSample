@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.28010.2003
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkProcessorFn", "WorkprocessorFn\WorkProcessorFn.csproj", "{FDDA9815-98B5-4689-B8D8-DBDDD6B237D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkItemTestPump", "WorkItemTestPump\WorkItemTestPump.csproj", "{BCF7786D-ED16-4861-8EB1-3AEC13014BB3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkItemTestPump", "WorkItemTestPump\WorkItemTestPump.csproj", "{BCF7786D-ED16-4861-8EB1-3AEC13014BB3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,6 +26,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {10AB1ABD-567B-4557-BD3F-BD20E6C85691}
+		SolutionGuid = {C6EC07BD-2AF3-40B4-89D4-18ABF78E4AB5}
 	EndGlobalSection
 EndGlobal
