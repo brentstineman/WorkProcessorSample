@@ -4,6 +4,7 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "AzureWebJobsDashboard": "UseDevelopmentStorage=true",
     "ResultStreamEventHubName": "RESULT_STREAM_EVENT_HUB_NAME",
+    "CosmosDBConnection": "COSMOS_DB_CONNECTION_STRING",
     "RESULT_THRESHOLD": "RESULT_THRESHOLD_VALUE",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     "EventHubConnectionAppSetting": "EVENT_HUB_CONNECTION_STRING",

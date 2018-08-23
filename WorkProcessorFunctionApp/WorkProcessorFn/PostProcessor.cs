@@ -2,23 +2,26 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.ServiceBus;
 using Microsoft.Extensions.Logging;
+using Microsoft.Azure.WebJobs.Extensions.CosmosDB;
 using System;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace WorkProcessorFn
 {
     public static class PostProcessor
     {
-        // Getting the hubName from Environment does not work!
-        //public static string hubName = Environment.GetEnvironmentVariable("ResultStreamEventHubName").ToString();
-
         public static int threshold = Convert.ToInt32(Environment.GetEnvironmentVariable("RESULT_THRESHOLD"));
 
         [FunctionName("PostProcessor")]
-        public static void Run([EventHubTrigger("resultstreamhub", Connection = "EventHubConnectionAppSetting")]string[] eventHubMessages,
-            [Blob("final-result/{name}", FileAccess.Write, Connection = "StorageConnectionAppSetting")] Stream finalResult,
+        public static async void Run([EventHubTrigger("%ResultStreamEventHubName%", Connection = "EventHubConnectionAppSetting")]string[] eventHubMessages,
+            [CosmosDB(
+                databaseName: "resultDataDB",
+                collectionName: "resultCollection",
+                ConnectionStringSetting = "CosmosDBConnection")]
+                IAsyncCollector<OffenderResult> finalResult,
             ILogger log)
         {
             // Final result object
@@ -42,28 +45,23 @@ namespace WorkProcessorFn
                         (offenderResult.SIB_Local > threshold))
                     {
                         finalResultObject.Add(offenderResult);
+                        await finalResult.AddAsync(offenderResult);
                     }
                 }
             }
 
             var outputString = JsonConvert.SerializeObject(finalResultObject);
-
-            // Put final result in blob storage
-            using (var stream = GenerateStreamFromString(outputString))
+            try
             {
-                finalResult = stream;
+                await finalResult.FlushAsync();
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex.Message);
+                //await Task.Delay(5000);
+                // do something else with it so its not lost
             }
 
-        }
-
-        public static Stream GenerateStreamFromString(string s)
-        {
-            var stream = new MemoryStream();
-            var writer = new StreamWriter(stream);
-            writer.Write(s);
-            writer.Flush();
-            stream.Position = 0;
-            return stream;
         }
     }
 }
