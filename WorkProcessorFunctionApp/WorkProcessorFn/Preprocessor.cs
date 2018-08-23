@@ -36,6 +36,7 @@ namespace PreprocessorFn
         };
         public static EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(connectionStringBuilder.ToString());
         public static Boolean isEndOfFile = false;
+        public static StreamReader reader;
 
         [FunctionName("Preprocessor")]
         public static async Task Run([QueueTrigger("jobqueue", Connection = "StorageConnectionString")] string myQueueItem, 
@@ -52,7 +53,7 @@ namespace PreprocessorFn
                 var container = BlobClient.GetContainerReference(MASTER_DATABASE_BLOB);
                 var blob = container.GetBlockBlobReference(MASTER_FILE);
                 var stream = blob.OpenReadAsync();
-                StreamReader reader = new StreamReader(stream.Result);
+                reader = new StreamReader(stream.Result);
                 int batchNr = 1;
                 do
                 {
@@ -62,8 +63,13 @@ namespace PreprocessorFn
                     log.Info($"Sending batch {batchNr}");
                     foreach (List<String> item in batchdata)
                     {
+                        // TODO convert the item into Models that were developed.
                         log.Info($"Sending {item.Count} items");
                         //log.Info("Items sent...");
+                        foreach(var thing in item)
+                        {
+                            log.Info($"{thing}");
+                        }
                         await SendMessagesToEventHub(item, batchNr, log);
                         batchNr += 1;
                     }
@@ -71,9 +77,6 @@ namespace PreprocessorFn
                 log.Info($"Sent all messages");
 
                 await eventHubClient.CloseAsync();
-
-                // Extract target lists
-                //String targetList = ReadFromBlob(TARGET_DATABASE_BLOB, TARGET_FILE, log).Result;
 
             }
             catch(Exception e)
@@ -88,15 +91,12 @@ namespace PreprocessorFn
         {
             log.Info($"Sending batch: {batchNumber}");
             await eventHubClient.SendAsync(new EventData(Encoding.UTF8.GetBytes(messages.ToString())));
-            //await eventHubClient.CloseAsync();
             await Task.Delay(10);
          }
 
         public static  IEnumerable<List<String>> ReadFromBlob(dynamic blob, TextReader reader, int count, List<String> batch,TraceWriter log)
         {
-
-            //using (StreamReader reader = new StreamReader(stream.Result))
-            //{
+                //TODO make sure the reader reads from where it left off last. As of now, it reads from beginning everytime
                 String line;
                 while ((line = reader.ReadLine()) != null)
                 {
@@ -111,8 +111,6 @@ namespace PreprocessorFn
                     }
                 }
                 isEndOfFile = true;
-            
-           // }
 
         }
     }
