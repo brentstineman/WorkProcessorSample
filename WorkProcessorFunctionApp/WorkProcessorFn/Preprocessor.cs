@@ -26,8 +26,8 @@ namespace PreprocessorFn
         public static string MASTER_FILE = Environment.GetEnvironmentVariable("MasterFile");
         public static string TARGET_FILE = Environment.GetEnvironmentVariable("TargetFile");
         public static int CHUNK_SIZE = Convert.ToInt32(Environment.GetEnvironmentVariable("ChunkSize"));
-        public static string EVENT_HUB_CONNECTION_STRING = Environment.GetEnvironmentVariable("EventHubConnectionString");
-        public static string EVENT_HUB_NAME = Environment.GetEnvironmentVariable("EventHubName");
+        public static string EVENT_HUB_CONNECTION_STRING = Environment.GetEnvironmentVariable("WorkItemEH-ConnectionString");
+        public static string EVENT_HUB_NAME = Environment.GetEnvironmentVariable("WorkItemEH-Name");
         public static dynamic connectionStringBuilder = new EventHubsConnectionStringBuilder(EVENT_HUB_CONNECTION_STRING)
         {
             EntityPath = EVENT_HUB_NAME
