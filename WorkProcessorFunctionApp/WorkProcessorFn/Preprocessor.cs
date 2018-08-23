@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Azure.EventHubs;
 using System.Text;
+using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 
 namespace PreprocessorFn
 {
@@ -33,7 +35,7 @@ namespace PreprocessorFn
             EntityPath = EVENT_HUB_NAME
         };
         public static EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(connectionStringBuilder.ToString());
-
+        public static Boolean isEndOfFile = false;
 
         [FunctionName("Preprocessor")]
         public static async Task Run([QueueTrigger("jobqueue", Connection = "StorageConnectionString")] string myQueueItem, 
@@ -43,33 +45,42 @@ namespace PreprocessorFn
             log.Info($"C# Queue trigger function Processed job\n : {myQueueItem}");
             try
             {
-                // Extract master list
-                String masterList = ReadFromBlob(MASTER_DATABASE_BLOB, MASTER_FILE, log).Result;
-                
-
-                int count = 1; int batchNr = 1;
-                List<String> batchedData = new List<String>();
-                log.Info("Batching data...");
-                foreach (var item in masterList)
-                { 
-                    if(count < CHUNK_SIZE)
+                isEndOfFile = false;
+                IEnumerable<List<String>> batchdata;
+                CloudStorageAccount account = new CloudStorageAccount(credentials, true);
+                CloudBlobClient BlobClient = new CloudBlobClient(account.BlobStorageUri, account.Credentials);
+                var container = BlobClient.GetContainerReference(MASTER_DATABASE_BLOB);
+                var blob = container.GetBlockBlobReference(MASTER_FILE);
+                var stream = blob.OpenReadAsync();
+                StreamReader reader = new StreamReader(stream.Result);
+                int batchNr = 1;
+                do
+                {
+                    // Extract master list
+                    List<String> newBatch = new List<String>();
+                    batchdata = ReadFromBlob(blob,reader,1,newBatch, log);
+                    log.Info($"Sending batch {batchNr}");
+                    foreach (List<String> item in batchdata)
                     {
-                        batchedData.Add(item.ToString());
-                        count++;
-                    }
-                    else
-                    {
-                        
-                        count = 1; 
-                        await SendMessagesToEventHub(batchedData,batchNr,log);
+                        log.Info($"Sending {item.Count} items");
+                        foreach(var thing in item)
+                        {
+                            log.Info($"{thing}");
+                        }
+                        //log.Info("Items sent...");
+                        await SendMessagesToEventHub(item, batchNr, log);
                         batchNr += 1;
-                        batchedData = new List<String>();
                     }
-                }
-                // Extract target list
+                } while (!isEndOfFile);
+                log.Info($"Sent all messages");
+
+                await eventHubClient.CloseAsync();
+
+                // Extract target lists
                 //String targetList = ReadFromBlob(TARGET_DATABASE_BLOB, TARGET_FILE, log).Result;
 
-            }catch(Exception e)
+            }
+            catch(Exception e)
             {
                 log.Error("Failed while reading from blob...", e);
             }
@@ -81,24 +92,32 @@ namespace PreprocessorFn
         {
             log.Info($"Sending batch: {batchNumber}");
             await eventHubClient.SendAsync(new EventData(Encoding.UTF8.GetBytes(messages.ToString())));
-            await eventHubClient.CloseAsync();
+            //await eventHubClient.CloseAsync();
             await Task.Delay(10);
          }
 
-        public static async Task<String> ReadFromBlob(string containerName, string fileName, TraceWriter log)
+        public static  IEnumerable<List<String>> ReadFromBlob(dynamic blob, TextReader reader, int count, List<String> batch,TraceWriter log)
         {
-            CloudStorageAccount account = new CloudStorageAccount(credentials, true);
-            CloudBlobClient BlobClient = new CloudBlobClient(account.BlobStorageUri, account.Credentials);
-            var container = BlobClient.GetContainerReference(containerName);
-            var blob = container.GetBlockBlobReference(fileName);
 
-            using (var stream = new MemoryStream(blob.StreamWriteSizeInBytes))
-            {
-                // get the image that was uploaded by the client
-                return await blob.DownloadTextAsync();
-                
-            }
+            //using (StreamReader reader = new StreamReader(stream.Result))
+            //{
+                String line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    if (count <= CHUNK_SIZE)
+                    {
+                        batch.Add(line);
+                        count++;
+                    }
+                    else
+                    {
+                        yield return batch;
+                    }
+                }
+                isEndOfFile = true;
             
+           // }
+
         }
     }
 }
