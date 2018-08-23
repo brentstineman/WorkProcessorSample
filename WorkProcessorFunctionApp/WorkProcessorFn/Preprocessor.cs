@@ -63,10 +63,6 @@ namespace PreprocessorFn
                     foreach (List<String> item in batchdata)
                     {
                         log.Info($"Sending {item.Count} items");
-                        foreach(var thing in item)
-                        {
-                            log.Info($"{thing}");
-                        }
                         //log.Info("Items sent...");
                         await SendMessagesToEventHub(item, batchNr, log);
                         batchNr += 1;
