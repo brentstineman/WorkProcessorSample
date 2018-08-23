@@ -1,0 +1,19 @@
+{
+    "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "AzureWebJobsDashboard": "UseDevelopmentStorage=true",
+    "StorageConnectionString": "<CONNECTION_STRING_AZURE_STORAGE_ACCOUNT_GENERAL_PURPOSE>",
+    "StorageKey": "<KEY_AZURE_STORAGE_ACCOUNT_GENERAL_PURPOSE>",
+    "StorageAccountName": "<NAME_AZURE_STORAGE_ACCOUNT_GENERAL_PURPOSE>",
+    "WorkItemEH-Name": "<EVENT_HUB_NAME>",
+    "WorkItemEH-ConnectionString": "<EVENT_HUB_CONN_STRING>",
+    "ResultsEH-Name": "<EVENT_HUB_NAME>",
+    "ResultsEH-ConnectionString": "<EVENT_HUB_CONN_STRING>",
+    "SecondaryBlob": "<MAIN_JSON_BLOB_CONTAINER_NAME>",
+    "PrimaryBlob": "<CANDIDATE_JSON_BLOB_CONTAINER_NAME>",
+    "SecondaryFile": "<MAIN_JSON_FILE_NAME>",
+    "PrimaryFile": "<CANDIDATE_JSON_FILE_NAME>",
+    "ChunkSize": "<BATCH_SIZE Eg: 100>"
+  }
+}
