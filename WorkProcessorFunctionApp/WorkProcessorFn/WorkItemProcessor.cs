@@ -39,13 +39,25 @@ namespace WorkProcessorFn
                     };
 
                     // simulated caluclation on payload
-                    byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(messagePayload));
-                    string hashStr = System.Text.Encoding.Default.GetString(hash);
+                    Random rNum = new Random();
+                    
+                    foreach (var offender in myEvent.OffenderList)
+                    {
+                        OffenderResult newResult = new OffenderResult()
+                        {
+                            Forensic_ID = myEvent.SuspectDetails.Specimen_ID,
+                            Offender_ID = offender.Specimen_ID,
+                            PI_freq1 = rNum.Next(),
+                            PI_freq2 = rNum.Next(),
+                            PI_freq3 = rNum.Next(),
+                            SIB_freq1 = rNum.Next(),
+                            SIB_freq2 = rNum.Next(),
+                            SIB_freq3 = rNum.Next(),
+                            SIB_Local = rNum.Next()
+                        };
+                        result.ResultList.Add(newResult);
+                    }
                     // craft outbound event
-                    OffenderResult newResult = new OffenderResult();
-                    newResult.Forensic_ID = hashStr;
-                    result.ResultList.Add(newResult);
-
                     EventData outputEvent = new EventData(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(result)));
 
                     outputEventHubMessages.AddAsync(outputEvent).Wait();
