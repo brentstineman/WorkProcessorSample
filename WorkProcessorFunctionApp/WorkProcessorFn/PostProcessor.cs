@@ -16,7 +16,7 @@ namespace WorkProcessorFn
         public static int threshold = Convert.ToInt32(Environment.GetEnvironmentVariable("RESULT_THRESHOLD"));
 
         [FunctionName("PostProcessor")]
-        public static async void Run([EventHubTrigger("%ResultStreamEventHubName%", Connection = "EventHubConnectionAppSetting")]string[] eventHubMessages,
+        public static async void Run([EventHubTrigger("%ResultsEH-Name%", Connection = "ResultsEH-ConnectionString")]string[] eventHubMessages,
             [CosmosDB(
                 databaseName: "resultDataDB",
                 collectionName: "resultCollection",

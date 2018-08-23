@@ -12,37 +12,34 @@ namespace WorkProcessorFn
     public static class WorkItemProcessor
     {
         [FunctionName("WorkItemProcessor")]
-        public static async void Run([EventHubTrigger("samples-workitems", Connection = "")] EventData[] myEventHubMessages,
-            [EventHub("%EventHub%", Connection = "connectionEventHub")] IAsyncCollector<EventData> outputEventHubMessages,
+        public static void Run([EventHubTrigger("%WorkItemEH-Name%", Connection = "WorkItemEH-ConnectionString")] EventData[] myEventHubMessages,
+            [EventHub("%ResultsEH-Name%", Connection = "ResultsEH-ConnectionString")] IAsyncCollector<EventData> outputEventHubMessages,
             ILogger log)
         {
             // process messages
             foreach (EventData message in myEventHubMessages)
             {
-                string messagePaylog = Encoding.UTF8.GetString(message.Body.Array);
-                if (!messagePaylog.StartsWith("Message"))
+                string messagePayload = Encoding.UTF8.GetString(message.Body.Array);
+
+                // process each message
+                var myEvent = JsonConvert.DeserializeObject(messagePayload);
+
+                try
                 {
-                    // process each message
-                    var myEvent = JsonConvert.DeserializeObject(messagePaylog);
-
-                    try
-                    {
-                        // modify message here
-                        await outputEventHubMessages.AddAsync(message);
-                    }
-                    catch (Exception ex)
-                    {
-                        log.LogError(ex.Message);
-                        // do something else with it so its not lost
-                    }
-
+                    // modify message here
+                    outputEventHubMessages.AddAsync(message).Wait();
+                }
+                catch (Exception ex)
+                {
+                    log.LogError(ex.Message);
+                    // do something else with it so its not lost
                 }
 
                 // flush the event hub output, we're doing this and not letting the system so we can do error handling
                 // note that output batch must not exceed maximum Event Hub batch size
                 try
                 {
-                    await outputEventHubMessages.FlushAsync();
+                    outputEventHubMessages.FlushAsync().Wait();
                 }
                 catch (Exception ex)
                 {
