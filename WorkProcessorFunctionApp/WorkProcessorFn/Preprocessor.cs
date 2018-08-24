@@ -11,6 +11,7 @@ using Microsoft.Azure.EventHubs;
 using System.Text;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
+using WorkProcessorFn;
 
 namespace PreprocessorFn
 {
@@ -60,18 +61,46 @@ namespace PreprocessorFn
                 int batchNr = 1;
                 do
                 {
-                    List<String> newBatch = new List<String>();
+                    List<OffenderObject> newBatch = new List<OffenderObject>();
                     IEnumerator<String> en = reader.Lines().GetEnumerator();
                     for (int i = 0; i < CHUNK_SIZE; i++)
                     {
                         if (en.MoveNext())
                         {
                             String line = en.Current;
-                            newBatch.Add(line);
+                            OffenderObject offenderObj = JsonConvert.DeserializeObject<OffenderObject>(line);
+                            newBatch.Add(offenderObj);
                         }
                     }
 
-                    await SendMessagesToEventHub(newBatch, batchNr, log);
+                    // Creating event data object
+                    WorkItemObject workItemObject = new WorkItemObject()
+                    {
+                        SchemaVersion = "1.0",
+                        JobDetails = Guid.NewGuid().ToString(),
+                        SuspectDetails = new SuspectObject()
+                        {
+                            Specimen_ID = "Specimen1"
+                        },
+                        OffenderList = newBatch
+                    };
+
+                    WorkItemObject workItemObject2 = new WorkItemObject()
+                    {
+                        SchemaVersion = "1.0",
+                        JobDetails = Guid.NewGuid().ToString(),
+                        SuspectDetails = new SuspectObject()
+                        {
+                            Specimen_ID = "Specimen2"
+                        },
+                        OffenderList = newBatch
+                    };
+
+                    List<string> finalBatch = new List<string>();
+                    finalBatch.Add(workItemObject.ToString());
+                    finalBatch.Add(workItemObject2.ToString());
+
+                    await SendMessagesToEventHub(finalBatch, batchNr, log);
                     batchNr += 1;
                 } while (!isEndOfFile);
 
