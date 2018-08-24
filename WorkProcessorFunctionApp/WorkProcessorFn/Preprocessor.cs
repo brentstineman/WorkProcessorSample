@@ -98,7 +98,7 @@ namespace PreprocessorFn
 
                     List<string> finalBatch = new List<string>();
                     finalBatch.Add(workItemObject.ToString());
-                    finalBatch.Add(workItemObject2.ToString());
+                    //finalBatch.Add(workItemObject2.ToString());
 
                     await SendMessagesToEventHub(finalBatch, batchNr, log);
                     batchNr += 1;
